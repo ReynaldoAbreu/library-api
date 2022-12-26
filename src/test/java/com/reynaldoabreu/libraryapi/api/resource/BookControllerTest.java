@@ -21,6 +21,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.Optional;
+
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -30,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest
 public class BookControllerTest {
 
-@Autowired
+    @Autowired
     MockMvc mvc;
 
     @MockBean
@@ -76,13 +78,15 @@ public class BookControllerTest {
                 .content(json);
 
         mvc.perform(request)
-                .andExpect( status().isBadRequest() )
-                .andExpect( jsonPath("errors", hasSize(3)));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("errors", hasSize(3)));
     }
 
     @Test
     @DisplayName("Deve lançar erro ao tentar cadastrar um livro com isbn já utilizado por outro.")
     public void createBookWithDuplicateIsbn() throws Exception {
+
+        //cenario (givem)
         BookDTO dto = createBook();
         String json = new ObjectMapper().writeValueAsString(dto);
 
@@ -90,16 +94,64 @@ public class BookControllerTest {
         BDDMockito.given(service.save(Mockito.any(Book.class)))
                 .willThrow(new BusinessException(messageError));
 
+        //execução (when)
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .post(BOOK_API)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(json);
-        mvc.perform( request )
+        mvc.perform(request)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("errors", hasSize(1)))
                 .andExpect(jsonPath("errors[0]").value(messageError));
 
+    }
+
+    @Test
+    @DisplayName("Deve obter informações de um livro")
+    public void getBookDetailsTest() throws Exception {
+        //cenario (give)
+        Long id = 1L;
+
+        Book book = Book.builder()
+                .id(id)
+                .isbn(createBook().getIsbn())
+                .author(createBook().getAuthor())
+                .title(createBook().getTitle())
+                .build();
+
+        BDDMockito.given(service.getById(id)).willReturn(Optional.of(book));
+
+        //execução (when)
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(BOOK_API.concat("/" + id))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mvc
+                .perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(id))
+                .andExpect(jsonPath("title").value(createBook().getTitle()))
+                .andExpect(jsonPath("author").value(createBook().getAuthor()))
+                .andExpect(jsonPath("isbn").value(createBook().getIsbn()));
+
+    }
+
+    @Test
+    @DisplayName("Deve retornar resource not found quando o livro procurado não existir")
+    public void bookNotFoundTest() throws Exception {
+
+        //cenario
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.empty());
+
+        //execução
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(BOOK_API.concat("/" + 1L))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mvc
+                .perform(request)
+                .andExpect(status().isNotFound());
     }
 
     private static BookDTO createBook() {
