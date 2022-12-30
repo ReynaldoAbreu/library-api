@@ -7,7 +7,6 @@ import com.reynaldoabreu.libraryapi.service.BookService;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.prefs.BackingStoreException;
 
 @Service
 public class BookServiceImp implements BookService {
@@ -30,4 +29,15 @@ public class BookServiceImp implements BookService {
     public Optional<Book> getById(Long id) {
         return Optional.empty();
     }
+
+    @Override
+    public void delete(Book book) {
+
+    }
+
+    @Override
+    public Book update(Book book) {
+        return null;
+    }
+
 }

@@ -87,7 +87,7 @@ public class BookControllerTest {
     public void createBookWithDuplicateIsbn() throws Exception {
 
         //cenario (givem)
-        BookDTO dto = createBook();
+        BookDTO dto = createNewBook();
         String json = new ObjectMapper().writeValueAsString(dto);
 
         String messageError = "Isbn já cadastrado.";
@@ -115,9 +115,9 @@ public class BookControllerTest {
 
         Book book = Book.builder()
                 .id(id)
-                .isbn(createBook().getIsbn())
-                .author(createBook().getAuthor())
-                .title(createBook().getTitle())
+                .isbn(createNewBook().getIsbn())
+                .author(createNewBook().getAuthor())
+                .title(createNewBook().getTitle())
                 .build();
 
         BDDMockito.given(service.getById(id)).willReturn(Optional.of(book));
@@ -131,9 +131,9 @@ public class BookControllerTest {
                 .perform(request)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").value(id))
-                .andExpect(jsonPath("title").value(createBook().getTitle()))
-                .andExpect(jsonPath("author").value(createBook().getAuthor()))
-                .andExpect(jsonPath("isbn").value(createBook().getIsbn()));
+                .andExpect(jsonPath("title").value(createNewBook().getTitle()))
+                .andExpect(jsonPath("author").value(createNewBook().getAuthor()))
+                .andExpect(jsonPath("isbn").value(createNewBook().getIsbn()));
 
     }
 
@@ -154,8 +154,84 @@ public class BookControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    private static BookDTO createBook() {
+    @Test
+    @DisplayName("Deve deletar um livro")
+    public void deleteBookTest() throws Exception {
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.of(Book.builder().id(1L).build()));
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete(BOOK_API.concat("/" + 1L));
+
+        mvc.perform(request)
+                .andExpect(status().isNoContent());
+
+    }
+
+    @Test
+    @DisplayName("Deve retornar resource not found quando não encontrar um livro para deletar")
+    public void deleteNoExistentBookTest() throws Exception {
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.empty());
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete(BOOK_API.concat("/" + 1L));
+
+        mvc.perform(request)
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    @DisplayName("Deve atualizar um livro")
+    public void updateBookTest() throws Exception {
+
+        //cenario
+        Long id = 1L;
+        String json = new ObjectMapper().writeValueAsString(createNewBook());
+
+        Book updatingBook = Book.builder().id(id).title("some title").author("some author").isbn("321").build();
+        BDDMockito.given( service.getById(id) ).willReturn( Optional.of(updatingBook) );
+
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .put(BOOK_API.concat("/" + 1))
+                .content(json)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mvc.perform( request )
+                .andExpect( status().isOk() )
+                .andExpect( jsonPath("id").value(id) )
+                .andExpect( jsonPath("title").value(createNewBook().getTitle()) )
+                .andExpect( jsonPath("author").value(createNewBook().getAuthor()) )
+                .andExpect( jsonPath("isbn").value("321") );
+
+
+    }
+
+    @Test
+    @DisplayName("Deve retornar 404 ao tentar atualizar um livro inexistente")
+    public void updateNoExistentBookTest() throws Exception {
+
+        //cenario
+        Long id = 1L;
+        String json = new ObjectMapper().writeValueAsString(createNewBook());
+        BDDMockito.given( service.getById(id))
+                .willReturn(Optional.empty());
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .put(BOOK_API.concat("/" + 1L))
+                .accept(MediaType.APPLICATION_JSON)
+                .content(json)
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mvc.perform(request)
+                .andExpect(status().isNotFound());
+
+    }
+
+    private static BookDTO createNewBook() {
         return BookDTO.builder().author("Artur").title("As aventuras").isbn("001").build();
+
     }
 
 }
