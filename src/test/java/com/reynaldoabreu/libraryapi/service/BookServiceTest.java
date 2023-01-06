@@ -14,6 +14,9 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 
@@ -75,9 +78,93 @@ public class BookServiceTest {
 
     }
 
+    @Test
+    @DisplayName("Deve obter um livro por Id")
+    public void getByIdTest(){
+
+        //cenario
+        Long id = 1L;
+        Book  book = createValidBook();
+        book.setId(id);
+        Mockito.when(repository.findById(id)).thenReturn(Optional.of(book));
+
+        //execução
+        Optional<Book> foundBook = service.getById(id);
+
+        //verificação
+        assertThat( foundBook.isPresent()).isTrue();
+        assertThat( foundBook.get().getId()).isEqualTo(book.getId());
+        assertThat( foundBook.get().getAuthor()).isEqualTo(book.getAuthor());
+        assertThat( foundBook.get().getIsbn()).isEqualTo(book.getIsbn());
+        assertThat( foundBook.get().getTitle()).isEqualTo(book.getTitle());
+
+    }
+
+    @Test
+    @DisplayName("Deve retornar vazio ao obter um livro quando ele não existir na base")
+    public void bookNotFoundById(){
+
+        Long id = 1L;
+        Mockito.when(repository.findById(id)).thenReturn(Optional.empty());
+
+        //execução
+        Optional<Book> book = service.getById(id);
+
+        assertThat(book.isPresent()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Deve deletar um livro")
+    public void deleteBookTest(){
+
+        Book book = Book.builder().id(1L).build();
+
+        //execução
+        org.junit.jupiter.api.Assertions.assertDoesNotThrow( () -> service.delete(book));
+
+        //verificação
+
+        Mockito.verify(repository, Mockito.times(1)).delete(book);
+
+    }
+
+    @Test
+    @DisplayName("deve ocorrer erro ao tentar deletar um livro inexistente")
+    public void deleteInvalidBookTest(){
+
+        Book book = new Book();
+
+        org.junit.jupiter.api.Assertions.assertThrows( IllegalArgumentException.class, () -> service.delete(book) );
+
+        Mockito.verify( repository, Mockito.never() ).delete(book);
+
+    }
+
+    @Test
+    @DisplayName("Deve atualizar um livro")
+    public void updateBookTest(){
+
+        //cenario
+        Long id = 1L;
+        Book updatingBook = Book.builder().id(id).build();
+
+        Book bookUpdate = createValidBook();
+        bookUpdate.setId(id);
+
+        Mockito.when(repository.save(updatingBook)).thenReturn(bookUpdate);
+
+        //execução
+        Book book = service.update(updatingBook);
+
+        assertThat(book.getId()).isEqualTo(bookUpdate.getId());
+        assertThat(book.getTitle()).isEqualTo(bookUpdate.getTitle());
+        assertThat(book.getIsbn()).isEqualTo(bookUpdate.getIsbn());
+        assertThat(book.getAuthor()).isEqualTo(bookUpdate.getAuthor());
+
+    }
+
     private static Book createValidBook() {
         return Book.builder().isbn("123").author("Fulano").title("As aventuras").build();
     }
-
 
 }
