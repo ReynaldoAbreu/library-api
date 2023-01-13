@@ -12,9 +12,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.*;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -141,6 +144,18 @@ public class BookServiceTest {
     }
 
     @Test
+    @DisplayName("deve ocorrer erro ao tentar atualizar um livro inexistente")
+    public void updateInvalidBookTest(){
+
+        Book book = new Book();
+
+        org.junit.jupiter.api.Assertions.assertThrows( IllegalArgumentException.class, () -> service.update(book) );
+
+        Mockito.verify( repository, Mockito.never() ).save(book);
+
+    }
+
+    @Test
     @DisplayName("Deve atualizar um livro")
     public void updateBookTest(){
 
@@ -162,6 +177,30 @@ public class BookServiceTest {
         assertThat(book.getAuthor()).isEqualTo(bookUpdate.getAuthor());
 
     }
+
+    @Test
+    @DisplayName("Deve filtrar um livro pelas propriedades")
+    public void findBookTest(){
+
+        Book book = createValidBook();
+
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        List<Book> list = Arrays.asList(book);
+        Page<Book> page = new PageImpl<Book>(list, pageRequest, 1);
+
+        Mockito.when(repository.findAll(Mockito.any(Example.class), Mockito.any( PageRequest.class)))
+                .thenReturn(page);
+
+        Page<Book> result = service.find(book, pageRequest);
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent()).isEqualTo(list);
+        assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
+        assertThat(result.getPageable().getPageSize()).isEqualTo(10);
+
+    }
+
+
 
     private static Book createValidBook() {
         return Book.builder().isbn("123").author("Fulano").title("As aventuras").build();
