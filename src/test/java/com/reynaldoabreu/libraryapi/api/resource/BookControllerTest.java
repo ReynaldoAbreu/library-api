@@ -33,8 +33,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
+@WebMvcTest(controllers = BookController.class)
 @AutoConfigureMockMvc
-@WebMvcTest
 public class BookControllerTest {
 
     @Autowired
