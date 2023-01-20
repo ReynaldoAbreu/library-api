@@ -1,6 +1,5 @@
 package com.reynaldoabreu.libraryapi.api.resource;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reynaldoabreu.libraryapi.api.dto.LoanDto;
 import com.reynaldoabreu.libraryapi.exception.BusinessException;
