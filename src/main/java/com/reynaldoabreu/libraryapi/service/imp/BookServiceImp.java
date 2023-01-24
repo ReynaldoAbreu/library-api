@@ -4,6 +4,8 @@ import com.reynaldoabreu.libraryapi.exception.BusinessException;
 import com.reynaldoabreu.libraryapi.model.entity.Book;
 import com.reynaldoabreu.libraryapi.model.repository.BookRepository;
 import com.reynaldoabreu.libraryapi.service.BookService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -14,7 +16,8 @@ import java.util.Optional;
 
 @Service
 public class BookServiceImp implements BookService {
-    private BookRepository repository;
+
+    private final BookRepository repository;
 
     public BookServiceImp(BookRepository repository) {
         this.repository = repository;
@@ -71,8 +74,8 @@ public class BookServiceImp implements BookService {
     }
 
     @Override
-    public Optional<Book> getBookByIsbn(String s) {
-        return Optional.empty();
+    public Optional<Book> getBookByIsbn(String isbn) {
+        return repository.findByIsbn(isbn);
     }
 
 }

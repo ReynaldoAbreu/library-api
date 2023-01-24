@@ -2,7 +2,6 @@ package com.reynaldoabreu.libraryapi.service;
 
 import com.reynaldoabreu.libraryapi.exception.BusinessException;
 import com.reynaldoabreu.libraryapi.model.entity.Book;
-
 import com.reynaldoabreu.libraryapi.model.repository.BookRepository;
 import com.reynaldoabreu.libraryapi.service.imp.BookServiceImp;
 import org.assertj.core.api.Assertions;
@@ -15,13 +14,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.*;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
+
 
 
 @ExtendWith(SpringExtension.class)
@@ -200,7 +197,21 @@ public class BookServiceTest {
 
     }
 
+    @Test
+    @DisplayName("Deve obter um livro pelo isbn")
+    public void findBookByIsbnTest(){
 
+        String isbn = "123";
+
+        Mockito.when(repository.findByIsbn(isbn)).thenReturn(Optional.of(Book.builder().id(1L).isbn(isbn).build()));
+
+        Optional<Book> book = service.getBookByIsbn(isbn);
+
+        Assertions.assertThat(book.isPresent()).isTrue();
+        assertThat(book.get().getId()).isEqualTo(1L);
+        assertThat(book.get().getIsbn()).isEqualTo(isbn);
+
+    }
 
     private static Book createValidBook() {
         return Book.builder().isbn("123").author("Fulano").title("As aventuras").build();

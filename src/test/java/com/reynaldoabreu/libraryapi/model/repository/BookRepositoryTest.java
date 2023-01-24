@@ -1,12 +1,14 @@
 package com.reynaldoabreu.libraryapi.model.repository;
 
 import com.reynaldoabreu.libraryapi.model.entity.Book;
-import org.assertj.core.api.Assertions;
+import com.reynaldoabreu.libraryapi.model.repository.BookRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -107,7 +109,7 @@ public class BookRepositoryTest {
 
     }
 
-    private static Book createNewBook(String isbn) {
+    public static Book createNewBook(String isbn) {
         return Book.builder().title("As aventuras").author("arthur").isbn(isbn).build();
     }
 

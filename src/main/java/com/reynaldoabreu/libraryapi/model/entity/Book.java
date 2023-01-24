@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Generated;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,4 +25,7 @@ public class Book {
     private String author;
     @Column
     private String isbn;
+
+//    @OneToMany( mappedBy = "book" )
+//    private List<Loan> loans;
 }
